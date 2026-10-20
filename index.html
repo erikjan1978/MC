@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>medicalchart.io — Medisch dossier 3.10</title>
+  <title>medicalchart.io — Medisch dossier 3.11</title>
   <style>
     :root{--paper:#e8e8e4;--panel:#f8f8f5;--ink:#292a27;--mid:#62645e;--line:#c5c7bf;--blue:#50564f;--blue-pale:#e3e6df;--red:#925247;--green:#56664f;--r:3px}
     *{box-sizing:border-box}html{font-size:16px}body{margin:0;background:var(--paper);color:var(--ink);font:400 1rem/1.45 "Roobert","Helvetica Neue",Arial,sans-serif}button,input,textarea,select{font:inherit;color:inherit}button{cursor:pointer}
@@ -605,7 +605,7 @@ function validateClinical(value){if(value===undefined)return emptyClinical();if(
     function syncAgeUnit(){document.querySelectorAll('[data-age-unit]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ageUnit===state.ageUnit)));$('age').placeholder={days:'dagen',months:'maanden',years:'jaar'}[state.ageUnit]}
     function compose(forPdf=false){const gender=state.sex==='Ander'&&$('sex-other').value.trim()?$('sex-other').value.trim():(state.sex==='Ander'?'X':state.sex);const patient=['Geslacht: '+gender,$('age').value&&'Leeftijd: '+$('age').value+' '+ageLabel(),$('weight').value&&'Gewicht: '+bodySummary('weight'),$('height').value&&'Lengte: '+bodySummary('height'),calcBmi()&&'BMI: '+calcBmi()+' kg/m²'].filter(Boolean).join(' | ');const v=[ $('temp').value&&'T '+$('temp').value+' °'+temperatureUnit,$('bp').value&&'RR '+$('bp').value+' mmHg',$('pulse').value&&'HF '+$('pulse').value+'/min ('+(pulseRhythm==='regular'?'regelmatig':'onregelmatig')+')',$('sat').value&&'SpO₂ '+$('sat').value+'%',$('resp').value&&'AF '+$('resp').value+'/min', $('oxygen').value.trim()&&'O₂ '+$('oxygen').value.trim()+' L/min',glucoseSummary()].filter(Boolean).join(' | ');const exam=systems.map(s=>{const f=state.findings[s.id],all=[...f.selected,f.text.trim()].filter(Boolean);return all.length?s.name+': '+all.join('; '):''}).filter(Boolean).join('\n');return patient+(($('section-anamnesis').open||(forPdf&&clinicalSummary()))?'\n\nANAMNESE\n'+(clinicalSummary()||'Nog geen anamnese ingevoerd.'):'')+'\n\nVITALE FUNCTIES'+(v?'\n'+v:'\nNiet ingevoerd.')+'\n\nLICHAMELIJK ONDERZOEK\n'+(exam||'Nog geen bevindingen ingevoerd.')+(($('section-diagnosis').open||(forPdf&&clinical.diagnosis.trim()))?'\n\nDIAGNOSE\n'+(clinical.diagnosis.trim()||'Nog geen diagnose ingevoerd.'):'')+(($('section-plan').open||(forPdf&&clinical.plan.trim()))?'\n\nPLAN\n'+(clinical.plan.trim()||'Nog geen plan ingevoerd.'):'')}
     function filled(f){return f.selected.length>0||f.text.trim()}
-    function render(){syncPulseRhythm();renderClinical();const current=systems[state.active],finding=state.findings[current.id];$('bmi').textContent=calcBmi()||'—';validateVitals();renderNorms();$('summary-title').textContent=$('title').value.trim()||'Lichamelijk onderzoek';$('summary').value=compose();$('count').textContent=systems.filter(s=>filled(state.findings[s.id])).length+' / 8 gereed';$('custom-title').textContent=current.name;$('finding').value=finding.text;$('prev').disabled=state.active===0;$('next').disabled=state.active===systems.length-1;
+    function render(){syncPulseRhythm();renderClinical();const current=systems[state.active],finding=state.findings[current.id];$('bmi').textContent=calcBmi()||'—';validateVitals();renderNorms();$('summary-title').textContent=$('title').value.trim()||'Lichamelijk onderzoek';$('summary').value=summaryPlainText(compose());$('count').textContent=systems.filter(s=>filled(state.findings[s.id])).length+' / 8 gereed';$('custom-title').textContent=current.name;$('finding').value=finding.text;$('prev').disabled=state.active===0;$('next').disabled=state.active===systems.length-1;
       $('topics').innerHTML=systems.map((s,i)=>`<button class="topic ${i===state.active?'active':''}" data-topic="${i}"><span class="number">${String(i+1).padStart(2,'0')}</span><span>${esc(s.name)}</span>${filled(state.findings[s.id])?'<span class="done">✓</span>':''}</button>`).join('');document.querySelectorAll('[data-topic]').forEach(b=>b.onclick=()=>{state.active=+b.dataset.topic;render()});
       $('choices').innerHTML=current.choices.map((c,i)=>`<button class="choice ${finding.selected.includes(c)?'selected':''}" data-choice="${i}">${esc(c)}</button>`).join('');document.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>{const c=current.choices[+b.dataset.choice],p=finding.selected.indexOf(c);p>=0?finding.selected.splice(p,1):finding.selected.push(c);render()});renderHistory()}
     const historyKey='lo-dossiers-v4',legacyHistoryKey='lo-geschiedenis-download-v2';
@@ -650,35 +650,37 @@ function validateClinical(value){if(value===undefined)return emptyClinical();if(
     function loadEntry(id){const e=state.history.find(e=>e.id===id);if(!e)return;try{if(e.originalText!==undefined||!e.data){$('legacy-text').value=e.originalText??e.text;$('legacy-details').hidden=false;}else{$('legacy-details').hidden=true;$('legacy-text').value='';}const data=e.data||parseLegacy(e.text);data.color=entryColor(e);applySnapshot(data);loadedId=e.id;loadedBaseline=JSON.stringify(snapshot());$('history-status').textContent=e.data?'Dossier ingeladen.':'Oud dossier hersteld; bevindingen staan als vrije tekst. Controleer de oorspronkelijke samenvatting.';renderHistory();}catch(error){$('history-status').textContent=error.message;}}
     function renderHistory(){renderDossierTree();const box=$('history-list');if(!state.history.length){box.innerHTML='<div class="empty">Nog geen opgeslagen dossiers.</div>';return}box.innerHTML=state.history.map(e=>`<div class="history-item ${e.id===loadedId?'is-loaded':''}"><button class="history-info history-load" data-load="${esc(e.id)}" type="button"><span class="history-title"><span class="dossier-dot" style="background:${entryColor(e)}" aria-hidden="true"></span><strong>${esc(e.title)}</strong></span><small>${new Date(e.date).toLocaleString('nl-NL')} · ${e.id===loadedId?'Geopend':e.data?'Open dossier':'Oud dossier'}</small></button><button class="icon" data-delete="${esc(e.id)}" aria-label="Dossier verwijderen: ${esc(e.title)}">×</button></div>`).join('');box.querySelectorAll('[data-load]').forEach(b=>b.onclick=()=>requestLoad(b.dataset.load));box.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{const next=state.history.filter(e=>e.id!==b.dataset.delete);if(persistHistory(next)){if(loadedId===b.dataset.delete){loadedId=null;loadedBaseline='';renderHistory()}$('history-status').textContent='Dossier uit de lijst verwijderd.';}});}
     function summaryPlainText(value){
-      let text=String(value).replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
-      // Decode encoded text fragments only when encoded whitespace identifies URL encoding.
-      // A literal percentage such as SpO2 98% is left intact.
-      if(/%(?:20|0a|0d)/i.test(text)){
-        text=text.replace(/(?:%[0-9a-f]{2})+/gi,fragment=>{
-          try{return decodeURIComponent(fragment)}catch{return fragment.replace(/%([0-7][0-9a-f])/gi,(_,hex)=>String.fromCharCode(parseInt(hex,16)))}
+      let text=String(value);
+      // Unwrap repeated URL encoding, including encoded UTF-8 and line breaks.
+      for(let pass=0;pass<8;pass++){
+        const decoded=text.replace(/(?:%[0-9a-f]{2})+/gi,fragment=>{
+          try{return decodeURIComponent(fragment)}
+          catch{return fragment.replace(/%([0-7][0-9a-f])/gi,(_,hex)=>String.fromCharCode(parseInt(hex,16)))}
         });
+        if(decoded===text)break;text=decoded;
       }
-      return text;
+      return text.normalize('NFC').replace(/\r\n?/g,'\n')
+        .replace(/[\u00a0\u202f]/g,' ').replace(/[\u200b-\u200d\ufeff]/g,'')
+        .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g,'')
+        .replace(/(\d)\s*%(?![0-9a-f]{2})/gi,'$1 procent')
+        .replace(/%/g,' procent ').replace(/[ \t]+\n/g,'\n').trim();
     }
     function selectSummaryText(){
-      const area=$('summary');
-      area.value=summaryPlainText(area.value);
+      const area=$('summary');area.value=summaryPlainText(area.value);
       area.focus();area.select();area.setSelectionRange(0,area.value.length);
     }
     async function copyText(text){
-      const plain=summaryPlainText(text);
-      $('summary').value=plain;
-      // Start the clipboard write during the user's tap, before any fallback.
+      const plain=summaryPlainText(text),area=$('summary');area.value=plain;
       if(navigator.clipboard&&typeof navigator.clipboard.writeText==='function'){
         try{await navigator.clipboard.writeText(plain);return true}catch{}
       }
+      // Native selection is a fallback when the browser disallows clipboard access.
       let copied=false;
-      const copyPlain=event=>{if(event.clipboardData){event.clipboardData.clearData();event.clipboardData.setData('text/plain',plain);event.preventDefault()}};
-      document.addEventListener('copy',copyPlain);
+      const handler=event=>{if(event.clipboardData){event.clipboardData.clearData();event.clipboardData.setData('text/plain',plain);event.preventDefault()}};
+      document.addEventListener('copy',handler);
       try{selectSummaryText();copied=document.execCommand('copy')}catch{}
-      finally{document.removeEventListener('copy',copyPlain)}
-      if(!copied)selectSummaryText();
-      return copied;
+      finally{document.removeEventListener('copy',handler)}
+      if(!copied)selectSummaryText();return copied;
     }
 
     document.querySelectorAll('[data-age-unit]').forEach(b=>b.onclick=()=>{state.ageUnit=b.dataset.ageUnit;syncAgeUnit();render()});
@@ -687,7 +689,7 @@ function validateClinical(value){if(value===undefined)return emptyClinical();if(
     bodyInputIds.forEach(id=>$(id).addEventListener('input',()=>{readBodyInputs(id.split('-')[0]);render()}));
     bodyInputIds.forEach(id=>$(id).addEventListener('blur',()=>{if(readBodyInputs(id.split('-')[0])){renderBodyInputs();render()}}));
     document.querySelectorAll('[data-body-unit]').forEach(b=>b.onclick=()=>{if(!bodyValid())return;bodyUnit=b.dataset.bodyUnit;renderBodyInputs();render();});
-    $('finding').oninput=e=>{state.findings[systems[state.active].id].text=e.target.value;$('summary').value=compose();$('count').textContent=systems.filter(s=>filled(state.findings[s.id])).length+' / 8 gereed'};$('clear-choices').onclick=()=>{state.findings[systems[state.active].id].selected=[];render()};$('clear-topic').onclick=()=>{state.findings[systems[state.active].id]={selected:[],text:''};render()};$('prev').onclick=()=>{if(state.active>0)state.active--;render()};$('next').onclick=()=>{if(state.active<systems.length-1)state.active++;render()};
+    $('finding').oninput=e=>{state.findings[systems[state.active].id].text=e.target.value;$('summary').value=summaryPlainText(compose());$('count').textContent=systems.filter(s=>filled(state.findings[s.id])).length+' / 8 gereed'};$('clear-choices').onclick=()=>{state.findings[systems[state.active].id].selected=[];render()};$('clear-topic').onclick=()=>{state.findings[systems[state.active].id]={selected:[],text:''};render()};$('prev').onclick=()=>{if(state.active>0)state.active--;render()};$('next').onclick=()=>{if(state.active<systems.length-1)state.active++;render()};
 
     // PDF generation stays entirely inside this file; no patient data is sent out.
     function buildDossierPdf(title, text, now=new Date()){
@@ -751,7 +753,7 @@ function validateClinical(value){if(value===undefined)return emptyClinical();if(
     $('select-summary').onclick=()=>{selectSummaryText();$('history-status').textContent='Tekst geselecteerd. Kies Kopieer in het selectiemenu van je iPhone.'};
     $('save-dossier').onclick=saveCurrent;
     $('copy').onclick=async()=>{
-      const copied=await copyText($('summary').value);
+      const copied=await copyText(compose());
       $('copy-status').textContent=copied?'Platte tekst naar het klembord gekopieerd.':'Automatisch kopiëren is geblokkeerd. Gebruik Tekst selecteren en kies Kopieer.';
     };
     function clearForm(){applyExtra(emptyExtra());pulseRhythm='regular';clinical=emptyClinical();anamActive=0;document.querySelectorAll(".clinical-section").forEach(d=>d.open=false);startDossierColor();[...patientIds,...vitalIds].forEach(id=>$(id).value='');temperatureC=null;temperatureUnit='C';showTemperature();state.ageUnit='years';syncAgeUnit();state.sex='Man';state.active=0;state.findings=Object.fromEntries(systems.map(s=>[s.id,{selected:[],text:''}]));loadedId=null;loadedBaseline='';$('legacy-details').hidden=true;bodyUnit='metric';renderBodyInputs();syncPatient();render();$('history-status').textContent='Nieuw dossier. Eerder bewaarde dossiers blijven in de lijst.';}
@@ -760,12 +762,12 @@ function validateClinical(value){if(value===undefined)return emptyClinical();if(
     $('load-save').onclick=()=>{if(saveCurrent())continuePending();else $('load-message').textContent=$('history-status').textContent+' Annuleer om je invoer te controleren.'};$('load-discard').onclick=continuePending;$('load-cancel').onclick=()=>{pendingLoad=null;$('load-dialog').close()};$('load-dialog').oncancel=()=>{pendingLoad=null};
     $('delete-history').onclick=()=>{if(state.history.length&&confirm('Alle opgeslagen dossiers uit deze browser verwijderen?')){if(persistHistory([])){loadedId=null;loadedBaseline='';$('history-status').textContent='De opgeslagen dossiers zijn verwijderd.';}}};
 
-$('anam-text').oninput=e=>{clinical.anamnesis[anamSystems[anamActive].id].text=e.target.value;$('summary').value=compose();$('anam-count').textContent=anamSystems.filter(s=>filled(clinical.anamnesis[s.id])).length+' / '+anamSystems.length+' gereed'};
-['diagnosis','plan'].forEach(id=>$(id).oninput=e=>{clinical[id]=e.target.value;$('summary').value=compose()});
+$('anam-text').oninput=e=>{clinical.anamnesis[anamSystems[anamActive].id].text=e.target.value;$('summary').value=summaryPlainText(compose());$('anam-count').textContent=anamSystems.filter(s=>filled(clinical.anamnesis[s.id])).length+' / '+anamSystems.length+' gereed'};
+['diagnosis','plan'].forEach(id=>$(id).oninput=e=>{clinical[id]=e.target.value;$('summary').value=summaryPlainText(compose())});
 $('anam-clear-choices').onclick=()=>{clinical.anamnesis[anamSystems[anamActive].id].selected=[];render()};$('anam-clear').onclick=()=>{clinical.anamnesis[anamSystems[anamActive].id]={selected:[],text:''};render()};$('anam-prev').onclick=()=>{if(anamActive>0)anamActive--;renderClinical()};$('anam-next').onclick=()=>{if(anamActive<anamSystems.length-1)anamActive++;renderClinical()};
 
     document.querySelectorAll('[data-pulse-rhythm]').forEach(b=>b.onclick=()=>{pulseRhythm=b.dataset.pulseRhythm;render()});
-    document.querySelectorAll('.clinical-section').forEach(section=>section.addEventListener('toggle',()=>{$('summary').value=compose()}));
+    document.querySelectorAll('.clinical-section').forEach(section=>section.addEventListener('toggle',()=>{$('summary').value=summaryPlainText(compose())}));
     let glucoseUnit='mmol/L',glucoseCanonical=null;
     const normBands=[
       {label:'0–3 maanden',max:4/12,pulse:[120,150],resp:[30,60],bp:[60,80]},
