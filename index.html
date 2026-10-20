@@ -647,8 +647,19 @@ function validateClinical(value){if(value===undefined)return emptyClinical();if(
     function requestLoad(id){if(hasUnsaved()){pendingLoad=id;$('load-message').textContent='';$('load-dialog').showModal()}else loadEntry(id)}
     function loadEntry(id){const e=state.history.find(e=>e.id===id);if(!e)return;try{if(e.originalText!==undefined||!e.data){$('legacy-text').value=e.originalText??e.text;$('legacy-details').hidden=false;}else{$('legacy-details').hidden=true;$('legacy-text').value='';}const data=e.data||parseLegacy(e.text);data.color=entryColor(e);applySnapshot(data);loadedId=e.id;loadedBaseline=JSON.stringify(snapshot());$('history-status').textContent=e.data?'Dossier ingeladen.':'Oud dossier hersteld; bevindingen staan als vrije tekst. Controleer de oorspronkelijke samenvatting.';renderHistory();}catch(error){$('history-status').textContent=error.message;}}
     function renderHistory(){renderDossierTree();const box=$('history-list');if(!state.history.length){box.innerHTML='<div class="empty">Nog geen opgeslagen dossiers.</div>';return}box.innerHTML=state.history.map(e=>`<div class="history-item ${e.id===loadedId?'is-loaded':''}"><button class="history-info history-load" data-load="${esc(e.id)}" type="button"><span class="history-title"><span class="dossier-dot" style="background:${entryColor(e)}" aria-hidden="true"></span><strong>${esc(e.title)}</strong></span><small>${new Date(e.date).toLocaleString('nl-NL')} · ${e.id===loadedId?'Geopend':e.data?'Open dossier':'Oud dossier'}</small></button><button class="icon" data-delete="${esc(e.id)}" aria-label="Dossier verwijderen: ${esc(e.title)}">×</button></div>`).join('');box.querySelectorAll('[data-load]').forEach(b=>b.onclick=()=>requestLoad(b.dataset.load));box.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{const next=state.history.filter(e=>e.id!==b.dataset.delete);if(persistHistory(next)){if(loadedId===b.dataset.delete){loadedId=null;loadedBaseline='';renderHistory()}$('history-status').textContent='Dossier uit de lijst verwijderd.';}});}
+    function summaryPlainText(value){
+      let text=String(value).replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
+      // Decode encoded text fragments only when encoded whitespace identifies URL encoding.
+      // A literal percentage such as SpO2 98% is left intact.
+      if(/%(?:20|0a|0d)/i.test(text)){
+        text=text.replace(/(?:%[0-9a-f]{2})+/gi,fragment=>{
+          try{return decodeURIComponent(fragment)}catch{return fragment.replace(/%([0-7][0-9a-f])/gi,(_,hex)=>String.fromCharCode(parseInt(hex,16)))}
+        });
+      }
+      return text;
+    }
     async function copyText(text){
-      const plain=String(text).replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
+      const plain=summaryPlainText(text);
       const summary=$('summary');summary.value=plain;
       // Copy only text/plain, including when a browser uses the fallback path.
       const copyPlain=event=>{if(event.clipboardData){event.clipboardData.clearData();event.clipboardData.setData('text/plain',plain);event.preventDefault()}};
@@ -727,7 +738,7 @@ function validateClinical(value){if(value===undefined)return emptyClinical();if(
       }catch(error){$('pdf-status').textContent='PDF downloaden is niet gelukt. Probeer opnieuw.';console.error('PDF export failed',error)}
     };
 
-    $('summary').addEventListener('copy',event=>{if(event.clipboardData){const area=event.currentTarget;event.clipboardData.clearData();event.clipboardData.setData('text/plain',area.value.slice(area.selectionStart,area.selectionEnd));event.preventDefault()}});
+    $('summary').addEventListener('copy',event=>{if(event.clipboardData){const area=event.currentTarget;event.clipboardData.clearData();event.clipboardData.setData('text/plain',summaryPlainText(area.value.slice(area.selectionStart,area.selectionEnd)));event.preventDefault()}});
     $('save-dossier').onclick=saveCurrent;
     $('copy').onclick=async()=>{if(!validateVitals()||!bodyValid())return;const entry=saveCurrent(),copied=await copyText(compose());$('history-status').textContent=(entry?'Dossier bewaard. ':'Dossier niet bewaard. ')+(copied?'Samenvatting gekopieerd.':'Kopiëren mislukt; selecteer de samenvatting om handmatig te kopiëren.');};
     function clearForm(){applyExtra(emptyExtra());pulseRhythm='regular';clinical=emptyClinical();anamActive=0;document.querySelectorAll(".clinical-section").forEach(d=>d.open=false);startDossierColor();[...patientIds,...vitalIds].forEach(id=>$(id).value='');temperatureC=null;temperatureUnit='C';showTemperature();state.ageUnit='years';syncAgeUnit();state.sex='Man';state.active=0;state.findings=Object.fromEntries(systems.map(s=>[s.id,{selected:[],text:''}]));loadedId=null;loadedBaseline='';$('legacy-details').hidden=true;bodyUnit='metric';renderBodyInputs();syncPatient();render();$('history-status').textContent='Nieuw dossier. Eerder bewaarde dossiers blijven in de lijst.';}
