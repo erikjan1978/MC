@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>medicalchart.io — Medisch dossier</title>
+<style>
+:root{--bg:#f0f2f4;--card:#fff;--ink:#17222c;--mid:#586673;--line:#d6dce2;--fld:#aeb8c1;--acc:#1c5a86;--soft:#e8f0f6;--bad:#b42318;--ok:#2d7a54;--r:6px}
+*{box-sizing:border-box}html{scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}[hidden]{display:none!important}
+:focus-visible{outline:3px solid #5b9bd0;outline-offset:2px}
+.bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:20px;padding:10px 28px;background:#fff;border-bottom:1px solid var(--line)}
+.logo{font-size:23px;font-weight:300;letter-spacing:-.02em;color:var(--ink);text-decoration:none}.logo span{color:var(--mid)}
+.bar-date{flex:1;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px}.bar-date em{font-size:12px;color:var(--mid)}
+#clock{display:inline;font-size:13px;color:var(--mid);font-variant-numeric:tabular-nums}
+.btn{min-height:40px;padding:0 15px;border:1px solid var(--fld);border-radius:var(--r);background:#fff;font-weight:600;font-size:14px}
+.btn:hover{background:var(--soft)}.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}.btn.pri:hover{background:#154a70}.btn:disabled{opacity:.4;cursor:not-allowed}
+.lnk{border:0;background:none;padding:6px 0;color:var(--mid);font-size:13px;text-decoration:underline}
+.shell{max-width:1440px;margin:auto;padding:24px 28px 56px;display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:24px;align-items:start}
+main{display:grid;gap:16px;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px}
+.card>header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:15px 20px;border-bottom:1px solid var(--line)}
+h2{margin:0;font-size:18px;font-weight:650;letter-spacing:-.01em}h3{margin:0 0 12px;font-size:16px}.cnt{font-size:13px;color:var(--mid)}
+.body{padding:18px 20px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px 18px}.wide{grid-column:1/-1}
+.f{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#38444f;min-width:0}
+.row{display:flex;gap:8px;align-items:center}.in{position:relative;flex:1;min-width:0}.in i{position:absolute;right:11px;top:11px;font-style:normal;font-size:12px;font-weight:400;color:var(--mid);pointer-events:none}
+input,select,textarea{width:100%;border:1px solid var(--fld);border-radius:var(--r);background:#fff;font-weight:400}
+input,select{height:42px;padding:0 44px 0 11px}select{padding-right:8px}textarea{padding:12px;line-height:1.55;resize:vertical;min-height:7rem}
+#title,#sex-other,#age,#gctx,#sat-target{padding-right:11px}
+input:focus,textarea:focus,select:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 3px #1c5a8633}
+input[aria-invalid=true]{border-color:var(--bad);background:#fdf3f2}.err{min-height:1.1em;font-size:12px;font-weight:400;color:var(--bad)}
+.seg{display:inline-flex;align-self:flex-start;border:1px solid var(--fld);border-radius:var(--r);overflow:hidden;background:#fff}
+.seg button{min-height:36px;padding:0 13px;border:0;border-right:1px solid var(--line);background:#fff;font-size:13px;font-weight:600;color:#38444f}.seg button:last-child{border:0}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+output{display:flex;align-items:center;height:42px;padding:0 11px;border:1px solid var(--line);border-radius:var(--r);background:#f6f7f8;font-weight:600}
+.vit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid var(--line)}
+.vit>.f{padding:16px 20px;border-right:1px solid var(--line);border-top:1px solid var(--line)}.vit>.f:nth-child(-n+3){border-top:0}.vit>.f:nth-child(3n){border-right:0}
+.vit label{font-size:13px}.vit small{font-weight:400;color:var(--mid);font-size:12px}
+.st{display:flex;gap:7px;min-height:2.5em;font-size:12px;font-weight:400;line-height:1.4;color:var(--mid)}
+.st:before{content:'';flex:none;width:9px;height:9px;margin-top:3px;border-radius:50%;border:2px solid #a7b1ba}
+.st.n:before{background:#5f6c78;border-color:#5f6c78}.st.bad{color:var(--bad)}.st.bad:before{background:var(--bad);border-color:var(--bad)}
+details.ref{padding:14px 20px;font-size:13px}details.ref summary{cursor:pointer;font-weight:600}.scroll{overflow:auto;margin:12px 0}
+table{border-collapse:collapse;min-width:900px;width:100%}th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top;font-size:12px}th{background:#f1f3f5}tr.cur td,tr.cur th{background:#fff6d6}
+details.ref p{margin:.5rem 0;color:var(--mid);line-height:1.55}details.ref a{color:var(--acc)}
+.pane{display:grid;grid-template-columns:230px minmax(0,1fr)}.topics{display:flex;flex-direction:column;border-right:1px solid var(--line);background:#f6f7f8;border-radius:0 0 0 8px}
+.topics button{display:flex;justify-content:space-between;gap:8px;padding:12px 15px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;font-size:14px}
+.topics .on{background:var(--ink);color:#fff}.topics i{font-style:normal;color:var(--ok);font-weight:700}.topics .on i{color:#9fe3bf}
+.work{padding:18px 20px}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{min-height:38px;padding:0 14px;border:1px solid var(--fld);border-radius:99px;background:#fff;font-size:14px}.chip:hover{background:var(--soft)}
+.chip[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff}
+.foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:12px}.sp{flex:1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.note{position:sticky;top:76px;max-height:calc(100vh - 92px);overflow:auto;display:flex;flex-direction:column}
+.sheet{padding:20px 22px 14px;border-bottom:1px solid var(--line)}.sheet small{display:block;font-size:12px;color:var(--mid)}.sheet b{display:block;font-size:17px;overflow-wrap:anywhere}
+#summary{border:0;border-radius:0;min-height:22rem;flex:1;padding:18px 22px;background:#fffefb;font:400 14px/1.6 Helvetica,Arial,sans-serif}
+.acts{display:flex;flex-wrap:wrap;gap:8px;padding:14px 22px;border-top:1px solid var(--line)}.acts .pri{flex:1}
+#status{padding:0 22px 14px;margin:0;font-size:12px;color:var(--mid);min-height:1.4em}.priv{padding:0 22px 18px;margin:0;font-size:12px;color:var(--mid)}
+dialog{width:min(36rem,calc(100vw - 2rem));padding:22px;border:1px solid var(--line);border-radius:10px;color:var(--ink)}dialog::backdrop{background:#17222c88}
+dialog h2{margin-bottom:10px}dialog p{margin:.4rem 0;font-size:14px}.dact{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.hi{display:flex;border-top:1px solid var(--line)}.hi .o{flex:1;min-width:0;padding:10px 4px;border:0;background:none;text-align:left}.hi .o:hover{background:var(--soft)}.hi strong,.hi small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hi small{color:var(--mid);font-size:12px}.hi .x{border:0;background:none;font-size:20px;padding:0 12px;color:var(--mid)}.hi.cur .o{background:var(--soft)}
+#legacy{margin-top:10px;min-height:9rem}
+@media(max-width:1080px){.shell{grid-template-columns:1fr;padding:16px}.note{position:static;max-height:none}.bar{padding:10px 16px}.vit{grid-template-columns:repeat(2,minmax(0,1fr))}.vit>.f:nth-child(n){border-right:1px solid var(--line);border-top:1px solid var(--line)}.vit>.f:nth-child(-n+2){border-top:0}.vit>.f:nth-child(2n){border-right:0}}
+@media(max-width:700px){.bar-date{display:none}.bar{justify-content:space-between}.pane{grid-template-columns:1fr}.topics{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);border-radius:0}.topics button{flex:none;white-space:nowrap;border-bottom:0;border-right:1px solid var(--line)}.vit{grid-template-columns:1fr}.vit>.f:nth-child(n){border-right:0;border-top:1px solid var(--line)}.vit>.f:first-child{border-top:0}.two{grid-template-columns:1fr}}
+@media print{.bar,main{display:none}.shell{display:block;padding:0}.note{max-height:none;border:0}}
+</style>
+</head>
+<body>
+<header class="bar"><a class="logo" href="#top">medicalchart<span>.io</span></a><div class="bar-date"><time id="clock"></time><em>Anonymous and offline medical charting ...</em></div><button class="btn" id="open-hist">Dossiers <span id="hist-n"></span></button><button class="btn" id="new">Nieuw dossier</button></header>
+<div class="shell" id="top"><main>
+
+<section class="card"><header><h2>Patiënt</h2></header><div class="body"><div class="grid">
+<label class="f wide">Titel / kenmerk<input id="title" placeholder="Bijv. opname SEH" autocomplete="off"></label>
+<div class="f">Geslacht<div class="seg" data-k="sex"><button data-v="Man">Man</button><button data-v="Vrouw">Vrouw</button><button data-v="Ander">Anders</button></div><input id="sex-other" placeholder="Zelf omschrijven" hidden></div>
+<div class="f"><label for="age">Leeftijd</label><input id="age" inputmode="decimal" placeholder="Getal"><div class="seg" data-k="ageUnit"><button data-v="years">Jaar</button><button data-v="months">Maanden</button><button data-v="days">Dagen</button></div></div>
+<div class="f">Gewicht<div class="row"><span class="in"><input id="w1" inputmode="decimal"><i id="w1u">kg</i></span><span class="in" id="w2b" hidden><input id="w2" inputmode="decimal"><i>lb</i></span></div><span class="err" id="w-err"></span></div>
+<div class="f">Lengte<div class="row"><span class="in"><input id="h1" inputmode="decimal"><i id="h1u">cm</i></span><span class="in" id="h2b" hidden><input id="h2" inputmode="decimal"><i>in</i></span></div><span class="err" id="h-err"></span></div>
+<div class="f">BMI<output id="bmi">—</output></div>
+<div class="f">Eenheden lengte en gewicht<div class="seg" data-k="bodyUnit"><button data-v="metric">SI</button><button data-v="uk">UK</button><button data-v="us">US</button></div></div>
+</div></div></section>
+
+<section class="card"><header><h2>Anamnese</h2><span class="cnt" id="an-n"></span></header><div class="pane" id="an"></div></section>
+
+<section class="card"><header><h2>Vitale functies</h2></header><div class="vit">
+<div class="f"><label for="temp">Temperatuur</label><span class="in"><input id="temp" inputmode="decimal" placeholder="36,8" maxlength="12"><i id="temp-u">°C</i></span><div class="seg" data-k="tUnit"><button data-v="C">°C</button><button data-v="F">°F</button></div><span class="err" id="e-temp"></span><span class="st" id="st-temp"></span></div>
+<div class="f"><label for="bp">Bloeddruk</label><span class="in"><input id="bp" placeholder="120/80" maxlength="7"><i>mmHg</i></span><span class="err" id="e-bp"></span><span class="st" id="st-bp"></span></div>
+<div class="f"><label for="pulse">Hartslag</label><span class="in"><input id="pulse" inputmode="numeric" placeholder="80" maxlength="3"><i>/min</i></span><div class="seg" data-k="rhythm"><button data-v="regular">Regelmatig</button><button data-v="irregular">Onregelmatig</button></div><span class="err" id="e-pulse"></span><span class="st" id="st-pulse"></span></div>
+<div class="f"><label for="sat">Saturatie</label><span class="in"><input id="sat" inputmode="numeric" placeholder="98" maxlength="3"><i>%</i></span><select id="sat-target" aria-label="SpO2-referentie of doelbereik"><option value="air">Kamerlucht: 95–100%</option><option value="oxygen">O₂-doel ≥18 jaar: 94–98%</option><option value="hypercapnia">Voorgeschreven doel ≥18 jaar: 88–92%</option></select><span class="err" id="e-sat"></span><span class="st" id="st-sat"></span></div>
+<div class="f"><label for="resp">Ademhaling</label><span class="in"><input id="resp" inputmode="numeric" placeholder="16" maxlength="3"><i>/min</i></span><label for="oxygen">Zuurstof (L/min)</label><input id="oxygen" inputmode="decimal" placeholder="0 = kamerlucht" maxlength="12"><span class="err" id="e-resp"></span><span class="st" id="st-resp"></span><span class="err" id="e-oxygen"></span><span class="st" id="st-oxygen"></span></div>
+<div class="f"><label for="glucose">Bloedsuiker</label><span class="in"><input id="glucose" inputmode="decimal" placeholder="5,5" maxlength="12"><i id="g-u">mmol/L</i></span><div class="seg" data-k="gUnit"><button data-v="mmol/L">mmol/L</button><button data-v="mg/dL">mg/dL</button></div><small id="g-conv"></small><label for="gctx">Meetcontext</label><select id="gctx"><option value="unknown">Onbekend</option><option value="fasting">Nuchter</option><option value="random">Willekeurig / niet nuchter</option></select><span class="err" id="e-glucose"></span><span class="st" id="st-glucose"></span></div>
+</div>
+<details class="ref"><summary>Referentiewaarden en signaleringsgrenzen per leeftijd (NHS / NICE)</summary><p id="ref-age"></p><div class="scroll"><table><thead><tr><th>Leeftijd</th><th>Hartslag /min</th><th>Ademhaling /min</th><th>Systolisch mmHg</th><th>Temperatuur</th><th>SpO₂</th><th>O₂</th><th>Glucose mmol/L</th></tr></thead><tbody id="ref-rows"></tbody></table></div>
+<p>Rood = buiten de referentie of een NICE-alarmsignaal; open bolletje = niet beoordeeld (ontbrekende context of ongeldige invoer). Geen rood bolletje sluit ziekte niet uit. Dit is geen PEWS/NEWS- of sepsisscore.</p>
+<p>Temperatuur: signalering bij &lt;36 of ≥38 °C; de meetmethode beïnvloedt de waarde. Kinderen: alleen systolische oriëntatiewaarden. Volwassenen: algemene referentie 90–120/60–80 mmHg, geen behandeldoel.</p>
+<p>SpO₂: kamerlucht 95–100%; neonaten &lt;28 dagen en kinderen op O₂ vragen een individueel doel. L/min bepaalt geen FiO₂ en heeft geen universele normaalgrens.</p>
+<p>Glucose: laboratoriumreferentie 3,0–6,0 nuchter of 3,0–7,7 willekeurig; hypo-waarschuwing &lt;4,0. Geen diabetesdoelen, zwangerschaps- of neonatale normen. Omrekening: mmol/L × 18 = mg/dL.</p>
+<!--SOURCES--></details></section>
+
+<section class="card"><header><h2>Lichamelijk onderzoek</h2><span class="cnt" id="ex-n"></span></header><div class="pane" id="ex"></div></section>
+
+<section class="card"><header><h2>Diagnose en plan</h2></header><div class="body two"><label class="f">Diagnose<textarea id="diagnosis" maxlength="20000" placeholder="Typ hier…"></textarea></label><label class="f">Plan<textarea id="plan" maxlength="20000" placeholder="Typ hier…"></textarea></label></div></section>
+</main>
+
+<aside class="card note" aria-label="Samenvatting"><div class="sheet"><small>Samenvatting voor</small><b id="s-title">geen titel</b></div>
+<textarea id="summary" readonly aria-label="Samenvatting zonder titel of kenmerk"></textarea>
+<div class="acts"><button class="btn pri" id="copy">Kopieer tekst</button><button class="btn" id="pdf">PDF</button><button class="btn" id="save">Bewaar dossier</button></div>
+<div class="acts" style="border:0;padding-top:0"><button class="lnk" id="sel">Tekst selecteren</button><a class="lnk" href="https://onlineclipboard.vercel.app/clipboard" target="_blank" rel="noopener noreferrer">Online klembord ↗</a></div>
+<p id="status" role="status" aria-live="polite"></p>
+<p class="priv">Dossiers staan alleen in deze browser, niet online. Je blijft zelf verantwoordelijk voor zorgvuldig omgaan met persoonsgegevens, ook bij kopiëren of delen. Titel en kenmerk komen niet in de samenvatting of PDF.</p></aside>
+</div>
+
+<dialog id="d-hist"><h2>Opgeslagen dossiers</h2><p class="cnt" id="h-hint">Kies een dossier om alle velden terug te laden (maximaal 25).</p><div id="h-list"></div><textarea id="legacy" readonly hidden aria-label="Oorspronkelijke tekst"></textarea><div class="dact"><button class="btn" id="h-close">Sluiten</button><button class="btn" id="h-clear" style="color:var(--bad);margin-left:auto">Alles verwijderen</button></div></dialog>
+<dialog id="d-conf"><h2>Onbewaarde wijzigingen</h2><p>Bewaar de huidige invoer voordat je verdergaat.</p><p id="c-msg" role="status" style="color:var(--bad)"></p><div class="dact"><button class="btn pri" id="c-save">Bewaar en ga verder</button><button class="btn" id="c-drop">Verder zonder bewaren</button><button class="btn" id="c-cancel">Annuleren</button></div></dialog>
+
+
+<script>
+const AN=[{id:'hulpvraag',name:'Hulpvraag en beloop',choices:['Kind zelf','Ouder/verzorger','Verwijzer','Tolk gebruikt','Acuut begonnen','Geleidelijk begonnen','Toenemend','Afgenomen','Onveranderd','Terugkerend']},{id:'klachten',name:'Huidige klachten',choices:['Koorts','Pijn','Hoesten','Benauwdheid','Braken','Diarree','Huiduitslag','Vermoeidheid']},{id:'intake',name:'Eten, drinken en uitscheiding',choices:['Normale intake','Minder eten','Minder drinken','Minder plassen','Obstipatie']},{id:'voorgeschiedenis',name:'Voorgeschiedenis en geboorte',choices:['Geen relevante voorgeschiedenis gemeld','Chronische aandoening','Eerdere opname','Eerdere operatie','À terme geboren','Prematuur geboren','Complicaties zwangerschap','Complicaties geboorte']},{id:'ontwikkeling',name:'Groei en ontwikkeling',choices:['Geen zorgen gemeld','Zorgen over groei','Zorgen over motoriek','Zorgen over taalontwikkeling']},{id:'medicatie',name:'Medicatie',choices:['Geen medicatie gemeld','Dagelijkse medicatie','Zo nodig medicatie','Recent gewijzigd']},{id:'allergie',name:'Allergieën',choices:['Geen allergieën bekend','Geneesmiddelallergie gemeld','Voedselallergie gemeld','Status onbekend']},{id:'vaccinatie',name:'Vaccinaties',choices:['Volgens schema gemeld','Onvolledig gemeld','Status onbekend']},{id:'familie',name:'Familieanamnese',choices:['Geen relevante aandoeningen gemeld','Erfelijke aandoening','Atopie/astma','Onbekend']},{id:'sociaal',name:'Sociale context',choices:['Kinderopvang','School','Zieke contacten','Rookblootstelling','Recente reis','Zorgen thuis of op school']}];
+const EX=[{id:'algemeen',name:'Algemeen kindergeneeskunde',choices:['Niet acuut ziek','Alert en adequaat','Goed aanspreekbaar','Normale voedingstoestand','Normale hydratietoestand','Bleek','Suf','Prikkelbaar']},{id:'hoofd',name:'Hoofd-hals',choices:['Geen lymfadenopathie','Keel niet afwijkend','Tonsillen rustig','Slijmvliezen vochtig','Oren niet afwijkend','Nek soepel','Cervicale lymfadenopathie']},{id:'ogen',name:'Ogen',choices:['Pupillen isocoor en lichtreactief','Conjunctivae rustig','Oogbewegingen intact','Geen icterus','Rode reflex beiderzijds aanwezig','Conjunctivale roodheid']},{id:'longen',name:'Longen',choices:['Vesiculair ademgeruis','Geen bijgeluiden','Symmetrische thoraxexcursies','Geen intrekkingen','Geen neusvleugelen','Verlengd expirium','Crepitaties','Rhonchi']},{id:'hart',name:'Hart en vaten',choices:['Regulaire hartactie','Normale cortonen','Geen souffles','Perifere pulsaties palpabel','Capillary refill < 2 sec','Tachycardie','Souffle hoorbaar']},{id:'abdomen',name:'Abdomen',choices:['Soepele buik','Normale peristaltiek','Geen drukpijn','Geen defense musculaire','Geen palpabele weerstanden','Lever en milt niet palpabel','Drukpijn aanwezig']},{id:'neurologie',name:'Neurologie',choices:['Alert en georiënteerd','GCS 15','Pupillen isocoor','Kracht symmetrisch','Sensibiliteit intact','Meningeale prikkeling afwezig','Focale uitval afwezig']},{id:'bewegen',name:'Bewegingsapparaat',choices:['Normaal looppatroon','Volledige mobiliteit','Geen gewrichtszwelling','Geen bewegingsbeperking','Kracht symmetrisch','Geen drukpijn','Gewrichtszwelling aanwezig']}];
+const BANDS=[{l:'0–3 maanden',max:4/12,pulse:[120,150],resp:[30,60],bp:[60,80]},{l:'4–11 maanden',max:1,pulse:[110,150],resp:[30,50],bp:[70,90]},{l:'1–4 jaar',max:5,pulse:[90,130],resp:[20,40],bp:[80,100]},{l:'5–11 jaar',max:12,pulse:[80,120],resp:[20,30],bp:[90,110]},{l:'12–17 jaar',max:18,pulse:[70,100],resp:[15,25],bp:[100,130]},{l:'≥18 jaar',max:Infinity,pulse:[60,100],resp:[12,20],bp:[90,120]}];
+const $=id=>document.getElementById(id),esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>{v=String(v).trim().replace(',','.');return/^\d+(\.\d+)?$/.test(v)?+v:null},fm=n=>(Math.round(n*10)/10).toFixed(1).replace('.',','),nl=(n,d=1)=>n.toLocaleString('nl-NL',{maximumFractionDigits:d});
+const v=id=>$(id).value.replace(/\s/g,''),clone=x=>JSON.parse(JSON.stringify(x)),empty=l=>Object.fromEntries(l.map(s=>[s.id,{selected:[],text:''}]));
+const S={sex:'Man',ageUnit:'years',bodyUnit:'metric',tUnit:'C',tC:null,rhythm:'regular',gUnit:'mmol/L',gM:null,kg:null,cm:null,an:empty(AN),ex:empty(EX),diagnosis:'',plan:'',loaded:null,base:''};
+let EMPTY,panes={};
+const msg=t=>{$('status').textContent=t;return false};
+
+/* Weergave en invoer: lichaamsmaten, temperatuur, glucose */
+function showBody(){const u=S.bodyUnit,uk=u==='uk',im=u!=='metric';$('w2b').hidden=!uk;$('h2b').hidden=!im;$('w1u').textContent=uk?'st':im?'lb':'kg';$('h1u').textContent=im?'ft':'cm';
+ let a='',b='',c='',d='';if(S.kg!==null){if(!im)a=fm(S.kg);else{const lb=S.kg/.45359237;if(uk){let st=Math.floor(lb/14),r=Math.round((lb-st*14)*10)/10;if(r>=14){st++;r=0}a=String(st);b=fm(r)}else a=fm(lb)}}
+ if(S.cm!==null){if(!im)c=fm(S.cm);else{const n=S.cm/2.54;let ft=Math.floor(n/12),r=Math.round((n-ft*12)*10)/10;if(r>=12){ft++;r=0}c=String(ft);d=fm(r)}}
+ $('w1').value=a;$('w2').value=b;$('h1').value=c;$('h2').value=d;$('w-err').textContent=$('h-err').textContent=''}
+function val(id){const r=$(id).value.trim();return r===''?null:num(r)??NaN}
+function readBody(){const u=S.bodyUnit,uk=u==='uk',im=u!=='metric',[w1,w2,h1,h2]=['w1','w2','h1','h2'].map(val),bad=x=>Number.isNaN(x);let ew='',eh='';
+ if(bad(w1)||bad(w2))ew='Gebruik een positief getal.';else if(uk&&(w1!==null||w2!==null)&&(!Number.isInteger(w1??0)||(w2??0)>=14))ew='Vul hele stone in en pounds onder 14.';
+ else S.kg=w1===null&&w2===null?null:!im?w1:uk?((w1??0)*14+(w2??0))*.45359237:w1*.45359237;
+ if(bad(h1)||bad(h2))eh='Gebruik een positief getal.';else if(im&&(h1!==null||h2!==null)&&(!Number.isInteger(h1??0)||(h2??0)>=12))eh='Vul hele feet in en inches onder 12.';
+ else S.cm=h1===null&&h2===null?null:!im?h1:((h1??0)*12+(h2??0))*2.54;
+ if(ew)S.kg=null;if(eh)S.cm=null;$('w-err').textContent=ew;$('h-err').textContent=eh;['w1','w2'].forEach(i=>$(i).setAttribute('aria-invalid',!!ew));['h1','h2'].forEach(i=>$(i).setAttribute('aria-invalid',!!eh));return!ew&&!eh}
+const bmi=()=>S.kg>0&&S.cm>0?(S.kg/(S.cm/100)**2).toFixed(1):'';
+function readT(){const n=num($('temp').value);if(n===null){S.tC=null;return}const r=Math.round(n*10)/10;S.tC=S.tUnit==='C'?r:(r-32)*5/9}
+function showT(){if(S.tC!==null)$('temp').value=String(Math.round((S.tUnit==='C'?S.tC:S.tC*9/5+32)*10)/10).replace('.',',');$('temp-u').textContent='°'+S.tUnit;$('temp').placeholder=S.tUnit==='C'?'36,8':'98,2'}
+function showG(){$('g-u').textContent=S.gUnit;const g=S.gM;$('g-conv').textContent=g===null?'':S.gUnit==='mmol/L'?'≈ '+nl(g*18)+' mg/dL':'≈ '+nl(g,3)+' mmol/L'}
+const ageY=()=>{const n=num($('age').value);if(n===null)return null;const y=n/{days:365.25,months:12,years:1}[S.ageUnit];return y<=150?y:null};
+const ageLbl=()=>{const one=num($('age').value)===1;return S.ageUnit==='days'?one?'dag':'dagen':S.ageUnit==='months'?one?'maand':'maanden':'jaar'};
+
+/* Validatie en beoordeling (NHS / NICE NG254) */
+function errors(){const E={},t=$('temp').value.trim(),b=v('bp'),o=$('oxygen').value.trim(),g=$('glucose').value.trim();
+ if(t&&S.tC===null)E.temp='Gebruik een getal met maximaal 1 decimaal.';else if(S.tC!==null&&(S.tC<20||S.tC>45))E.temp='Gebruik 20–45 °C (68–113 °F).';
+ if(b){const m=b.match(/^(\d{1,3})\/(\d{1,3})$/);if(!m||+m[1]<20||+m[1]>300||+m[2]<10||+m[2]>200||+m[2]>+m[1])E.bp='Gebruik boven/onder, bijv. 120/80 (boven 20–300, onder 10–200).'}
+ [['pulse',350],['sat',100],['resp',150]].forEach(([id,max])=>{const x=v(id);if(x&&(!/^\d+$/.test(x)||+x>max))E[id]='Gebruik een geheel getal van 0 t/m '+max+'.'});
+ if(o&&(num(o)===null||num(o)>100))E.oxygen='Vul 0–100 L/min in.';if(g&&(S.gM===null||S.gM>100))E.glucose='Vul een geldige waarde in.';return E}
+function assess(E){const y=ageY(),d=y===null?null:y*365.25,band=y===null?null:BANDS.find(b=>y<b.max),R={},set=(id,a,t)=>R[id]={a,t};
+ for(const id of['temp','bp','pulse','sat','resp']){const x=v(id);
+  if(!x)set(id,null,'Niet ingevoerd');else if(E[id])set(id,null,'Controleer de invoer');else if(y===null)set(id,null,'Vul een geldige leeftijd in');
+  else if(id==='temp'){const t=S.tC;set(id,t<36||t>=38,t<36?'Temperatuur <36 °C':t>=38?(y<.25?'NICE: <3 maanden en ≥38 °C':y<.5&&t>=39?'NICE: 3–6 maanden en ≥39 °C':'Koorts: ≥38 °C'):'Geen temperatuursignaal (<36 of ≥38 °C)')}
+  else if(id==='bp'){const[s,dia]=x.split('/').map(Number),ad=y>=18;set(id,s<band.bp[0]||s>band.bp[1]||(ad&&(dia<60||dia>80)),ad?'Referentie 90–120 / 60–80 mmHg':'Systolisch '+band.bp.join('–')+' mmHg; diastolisch niet beoordeeld')}
+  else if(id==='sat'){const n=+x,tg=$('sat-target').value,o=num($('oxygen').value);
+   if(d<28)set(id,null,'Neonaat: individueel SpO₂-protocol nodig');else if(tg!=='air'&&y<18)set(id,null,'Kind op O₂: individueel doelbereik nodig');else if(tg==='air'&&o>0)set(id,null,'O₂ ingevoerd: kies toepasselijk SpO₂-doel');
+   else{const r=tg==='air'?[95,100]:tg==='oxygen'?[94,98]:[88,92];set(id,n<r[0]||n>r[1],(tg==='air'?'Kamerlucht: ':'Gekozen doel: ')+r.join('–')+'%')}}
+  else{const r=band[id],n=+x;set(id,n<r[0]||n>r[1],'Referentie '+r.join('–')+' /min ('+band.l+')')}}
+ if(y!==null&&y<16){const a=Math.floor(y),L=a<1?[150,50]:a<3?[140,40]:a<5?[130,35]:a<6?[120,24]:a<8?[110,24]:a<12?[105,22]:[91,21];
+  ['pulse','resp'].forEach((id,i)=>{if(R[id].a!==null&&+v(id)>=L[i])set(id,true,'NICE-alarmsignaal bij verdenking sepsis: ≥'+L[i]+' /min')});
+  if(y<12&&R.pulse.a!==null&&+v('pulse')<60)set('pulse',true,'NICE-alarmsignaal: hartslag <60 /min');
+  if(y>=12&&R.bp.a!==null&&+v('bp').split('/')[0]<=100)set('bp',true,'NICE-alarmsignaal bij verdenking sepsis: systolisch ≤100 mmHg')}
+ const g=S.gM,c=$('gctx').value;
+ if(!$('glucose').value.trim())set('glucose',null,'Niet ingevoerd');else if(E.glucose)set('glucose',null,'Controleer de invoer');else if(d===null)set('glucose',null,'Vul een geldige leeftijd in');else if(d<28)set('glucose',null,'Neonaat: gebruik lokaal glucoseprotocol');
+ else if(g<4)set('glucose',true,'Hypo-waarschuwing: <4,0 mmol/L');else if(c==='unknown')set('glucose',null,'Kies meetcontext voor de bovengrens');else{const u=c==='fasting'?6:7.7;set('glucose',g>u,'Laboratoriumreferentie 3,0–'+nl(u)+' mmol/L; hypo <4,0')}
+ const o=$('oxygen').value.trim();set('oxygen',null,!o?'Niet ingevoerd':E.oxygen?'Controleer de invoer':num(o)===0?'0 L/min: kamerlucht':'O₂ geregistreerd; geen universele L/min-norm');return R}
+
+/* Samenvatting */
+function bodyTxt(k){const m=k==='w'?fm(S.kg)+' kg':fm(S.cm)+' cm',u=S.bodyUnit;if(u==='metric')return m;const a=$(k+'1').value||'0',b=fm(num($(k+'2').value)||0);return(k==='h'?a+' ft '+b+' in':u==='uk'?a+' st '+b+' lb':a+' lb')+' ('+m+')'}
+const lines=(l,st)=>l.map(s=>{const f=st[s.id],a=[...f.selected,f.text.trim()].filter(Boolean);return a.length?s.name+': '+a.join('; '):''}).filter(Boolean).join('\n');
+function compose(){const sx=S.sex==='Ander'?($('sex-other').value.trim()||'X'):S.sex;
+ const pat=['Geslacht: '+sx,$('age').value.trim()&&'Leeftijd: '+$('age').value.trim()+' '+ageLbl(),S.kg!==null&&'Gewicht: '+bodyTxt('w'),S.cm!==null&&'Lengte: '+bodyTxt('h'),bmi()&&'BMI: '+bmi()+' kg/m²'].filter(Boolean).join(' | ');
+ const g=S.gM,vit=[$('temp').value.trim()&&'T '+$('temp').value.trim()+' °'+S.tUnit,v('bp')&&'RR '+v('bp')+' mmHg',v('pulse')&&'HF '+v('pulse')+'/min ('+(S.rhythm==='regular'?'regelmatig':'onregelmatig')+')',v('sat')&&'SpO₂ '+v('sat')+'%',v('resp')&&'AF '+v('resp')+'/min',$('oxygen').value.trim()&&'O₂ '+$('oxygen').value.trim()+' L/min',g!==null&&'Glucose '+$('glucose').value.trim()+' '+S.gUnit+' (≈ '+(S.gUnit==='mmol/L'?nl(g*18)+' mg/dL':nl(g,3)+' mmol/L')+'; '+{unknown:'meetcontext onbekend',fasting:'nuchter',random:'willekeurig'}[$('gctx').value]+')'].filter(Boolean).join(' | ');
+ const blk=(t,s)=>s?'\n\n'+t+'\n'+s:'';
+ return pat+blk('ANAMNESE',lines(AN,S.an))+'\n\nVITALE FUNCTIES\n'+(vit||'Niet ingevoerd.')+'\n\nLICHAMELIJK ONDERZOEK\n'+(lines(EX,S.ex)||'Nog geen bevindingen ingevoerd.')+blk('DIAGNOSE',S.diagnosis.trim())+blk('PLAN',S.plan.trim())}
+function plain(t){t=String(t);for(let i=0;i<8;i++){const d=t.replace(/(?:%[0-9a-f]{2})+/gi,f=>{try{return decodeURIComponent(f)}catch{return f}});if(d===t)break;t=d}
+ return t.normalize('NFC').replace(/\r\n?/g,'\n').replace(/[\u00a0\u202f]/g,' ').replace(/[\u200b-\u200d\ufeff]/g,'').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g,'').replace(/(\d)\s*%(?![0-9a-f]{2})/gi,'$1 procent').replace(/%/g,' procent ').replace(/[ \t]+\n/g,'\n').trim()}
+
+/* Eén component voor anamnese en onderzoek */
+function pane(box,list,key,counter){let a=0;
+ box.innerHTML='<nav class="topics" aria-label="Onderwerpen"></nav><div class="work"><h3></h3><div class="chips"></div><textarea maxlength="20000" placeholder="Aanvullende bevindingen…"></textarea><div class="foot"><button class="lnk" data-x="sel">Selecties wissen</button><button class="lnk" data-x="all">Onderwerp wissen</button><span class="sp"></span><button class="btn" data-x="prev">Vorige</button><button class="btn pri" data-x="next">Volgende</button></div></div>';
+ const nav=box.querySelector('nav'),ttl=box.querySelector('h3'),chips=box.querySelector('.chips'),ta=box.querySelector('textarea'),fl=f=>f.selected.length||f.text.trim();
+ function drawNav(){nav.innerHTML=list.map((x,i)=>`<button class="${i===a?'on':''}" data-i="${i}">${esc(x.name)}${fl(S[key][x.id])?'<i>✓</i>':''}</button>`).join('');counter.textContent=list.filter(x=>fl(S[key][x.id])).length+' van '+list.length+' ingevuld'}
+ function draw(){const s=list[a],f=S[key][s.id];drawNav();ttl.textContent=s.name;ta.value=f.text;chips.innerHTML=s.choices.map((c,i)=>`<button class="chip" aria-pressed="${f.selected.includes(c)}" data-c="${i}">${esc(c)}</button>`).join('');box.querySelector('[data-x=prev]').disabled=!a;box.querySelector('[data-x=next]').disabled=a===list.length-1}
+ box.onclick=e=>{const b=e.target.closest('button');if(!b)return;const s=list[a],f=S[key][s.id],d=b.dataset;
+  if(d.i)a=+d.i;else if(d.c){const c=s.choices[+d.c],i=f.selected.indexOf(c);i<0?f.selected.push(c):f.selected.splice(i,1)}else if(d.x==='sel')f.selected=[];else if(d.x==='all')S[key][s.id]={selected:[],text:''};else if(d.x==='prev')a--;else if(d.x==='next')a++;else return;draw();update()};
+ ta.oninput=()=>{S[key][list[a].id].text=ta.value;drawNav();update()};return{draw,reset(){a=0}}}
+
+/* Bijwerken */
+const blocked=()=>Object.keys(errors()).length>0||$('w-err').textContent||$('h-err').textContent;
+function update(){const E=errors(),R=assess(E),y=ageY();$('bmi').textContent=bmi()||'—';
+ for(const k of['temp','bp','pulse','sat','resp','oxygen','glucose']){$(k).setAttribute('aria-invalid',!!E[k]);$('e-'+k).textContent=E[k]||'';const r=R[k];$('st-'+k).className='st '+(r.a===true?'bad':r.a===false?'n':'');$('st-'+k).textContent=(r.a===true?'Afwijkend · ':'')+r.t}
+ $('ref-age').textContent=y===null?'Vul de leeftijd in om de toepasselijke rij te markeren.':'Huidige leeftijdsgroep: '+BANDS.find(b=>y<b.max).l+'.';
+ $('ref-rows').innerHTML=BANDS.map(b=>`<tr${y!==null&&b===BANDS.find(n=>y<n.max)?' class="cur"':''}><th>${b.l}</th><td>${b.pulse.join('–')}</td><td>${b.resp.join('–')}</td><td>${b.bp.join('–')}${b.max===Infinity?' / diast. 60–80':''}</td><td>Rond 36,4 bij kind; signalering &lt;36 of ≥38 °C</td><td>95–100% op lucht; &lt;28 d individueel protocol</td><td>0 op lucht; op O₂ geen vaste norm</td><td>&lt;28 d: protocol; anders nuchter 3,0–6,0 / willekeurig 3,0–7,7; hypo &lt;4,0</td></tr>`).join('');
+ $('s-title').textContent=$('title').value.trim()||'geen titel';$('summary').value=plain(compose());showG();
+ const b=!!blocked();['copy','pdf','save'].forEach(i=>$(i).disabled=b)}
+function sync(){document.querySelectorAll('.seg').forEach(g=>g.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',S[g.dataset.k]===b.dataset.v)));$('sex-other').hidden=S.sex!=='Ander'}
+const on={bodyUnit:x=>{if(!readBody())return false;S.bodyUnit=x;showBody()},tUnit:x=>{if($('temp').value.trim()&&S.tC===null){$('temp').focus();return false}S.tUnit=x;showT()},
+ gUnit:x=>{if($('glucose').value.trim()&&S.gM===null){$('glucose').focus();return false}S.gUnit=x;if(S.gM!==null)$('glucose').value=(x==='mg/dL'?fm(S.gM*18):String(Math.round(S.gM*1e4)/1e4).replace('.',','))}};
+document.querySelectorAll('.seg').forEach(g=>g.onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=g.dataset.k;if(on[k]&&on[k](b.dataset.v)===false)return;S[k]=b.dataset.v;sync();update()});
+['title','age','sex-other','bp','pulse','sat','resp','oxygen'].forEach(i=>$(i).addEventListener('input',update));
+$('temp').addEventListener('input',()=>{readT();update()});$('temp').addEventListener('blur',()=>{showT()});
+$('glucose').addEventListener('input',()=>{const n=num($('glucose').value);S.gM=n===null?null:n/(S.gUnit==='mg/dL'?18:1);update()});
+['gctx','sat-target'].forEach(i=>$(i).addEventListener('change',update));
+['w1','w2','h1','h2'].forEach(i=>{$(i).addEventListener('input',()=>{readBody();update()});$(i).addEventListener('blur',()=>{if(readBody()){showBody();update()}})});
+['diagnosis','plan'].forEach(i=>$(i).addEventListener('input',e=>{S[i]=e.target.value;update()}));
+
+/* Dossiers */
+const KEY='lo-dossiers-v4';let H=[],raw=null,readFail=false,pending=null;
+function loadH(){try{raw=localStorage.getItem(KEY);H=raw===null?[]:JSON.parse(raw);if(!Array.isArray(H)||H.length>2000)throw 0;H=H.filter(e=>e&&typeof e.id==='string'&&typeof e.title==='string'&&typeof e.text==='string'&&Number.isFinite(Date.parse(e.date)))}catch{readFail=true;H=[];msg('Opgeslagen dossiers konden niet worden gelezen. De bestaande opslag blijft ongewijzigd.')}}
+function persist(next){if(readFail)return msg('De bestaande opslag kon niet worden gelezen en wordt niet overschreven. Kopieer de samenvatting.');if(next.length>25&&next.length>H.length)return msg('Maximaal 25 dossiers. Verwijder dossiers die je niet meer nodig hebt.');
+ try{if(localStorage.getItem(KEY)!==raw){loadH();drawH();return msg('De lijst is in een ander venster gewijzigd. Controleer de lijst en bewaar opnieuw.')}const r=JSON.stringify(next);localStorage.setItem(KEY,r);raw=r;H=next;drawH();return true}catch{return msg('Bewaren mislukt: browseropslag is niet beschikbaar of vol. Kopieer de samenvatting.')}}
+function snap(){return{schema:4,extraVitals:{oxygen:$('oxygen').value.trim(),glucose:$('glucose').value.trim(),glucoseUnit:S.gUnit,glucoseContext:$('gctx').value,satTarget:$('sat-target').value,...(S.gM===null?{}:{glucoseMmol:S.gM})},pulseRhythm:S.rhythm,clinical:{anamnesis:clone(S.an),diagnosis:S.diagnosis,plan:S.plan},bodyUnit:S.bodyUnit,ageUnit:S.ageUnit,patient:{title:$('title').value,age:$('age').value,weight:S.kg===null?'':String(S.kg),height:S.cm===null?'':String(S.cm),'sex-other':$('sex-other').value},sex:S.sex,temperatureUnit:S.tUnit,temperatureC:S.tC,temperatureText:$('temp').value,vitals:{bp:v('bp'),pulse:v('pulse'),sat:v('sat'),resp:v('resp')},findings:clone(S.ex)}}
+const fix=(l,src)=>Object.fromEntries(l.map(s=>{const f=src&&src[s.id];return[s.id,{selected:Array.isArray(f&&f.selected)?f.selected.filter(c=>s.choices.includes(c)):[],text:typeof(f&&f.text)==='string'?f.text.slice(0,20000):''}]}));
+function apply(d){if(!d||d.schema!==4||!d.patient||!d.vitals||!d.findings||!['Man','Vrouw','Ander'].includes(d.sex))throw Error('Dit dossier is onvolledig of heeft een onbekend formaat.');
+ const x=d.extraVitals||{},c=d.clinical||{},p=d.patient;Object.assign(S,{sex:d.sex,ageUnit:['days','months'].includes(d.ageUnit)?d.ageUnit:'years',bodyUnit:['uk','us'].includes(d.bodyUnit)?d.bodyUnit:'metric',tUnit:d.temperatureUnit==='F'?'F':'C',tC:typeof d.temperatureC==='number'?d.temperatureC:null,rhythm:d.pulseRhythm==='irregular'?'irregular':'regular',gUnit:x.glucoseUnit==='mg/dL'?'mg/dL':'mmol/L',kg:num(p.weight||''),cm:num(p.height||''),an:fix(AN,c.anamnesis),ex:fix(EX,d.findings),diagnosis:String(c.diagnosis||'').slice(0,20000),plan:String(c.plan||'').slice(0,20000)});
+ S.gM=typeof x.glucoseMmol==='number'?x.glucoseMmol:num(x.glucose||'')===null?null:num(x.glucose)/(S.gUnit==='mg/dL'?18:1);
+ $('title').value=p.title||'';$('age').value=p.age||'';$('sex-other').value=p['sex-other']||'';$('temp').value=d.temperatureText||'';['bp','pulse','sat','resp'].forEach(i=>$(i).value=d.vitals[i]||'');
+ $('oxygen').value=x.oxygen||'';$('glucose').value=x.glucose||'';$('gctx').value=['fasting','random'].includes(x.glucoseContext)?x.glucoseContext:'unknown';$('sat-target').value=['oxygen','hypercapnia'].includes(x.satTarget)?x.satTarget:'air';
+ $('diagnosis').value=S.diagnosis;$('plan').value=S.plan;showBody();showT();sync();panes.an.reset();panes.ex.reset();panes.an.draw();panes.ex.draw();update()}
+function save(){if(blocked())return msg('Controleer eerst de gemarkeerde velden.');const prev=H.find(e=>e.id===S.loaded),e={id:S.loaded||crypto.randomUUID(),title:$('title').value.trim()||'Lichamelijk onderzoek',date:new Date().toISOString(),text:compose(),data:snap(),...(prev&&prev.originalText!==undefined?{originalText:prev.originalText}:{})};
+ if(!persist([e,...H.filter(x=>x.id!==e.id)]))return false;S.loaded=e.id;S.base=JSON.stringify(e.data);msg('Dossier bewaard.');drawH();return true}
+const dirty=()=>JSON.stringify(snap())!==S.base,guard=fn=>dirty()?(pending=fn,$('c-msg').textContent='',$('d-conf').showModal()):fn();
+const go=()=>{const f=pending;pending=null;$('d-conf').close();f&&f()};
+$('c-save').onclick=()=>{if(save())go();else $('c-msg').textContent=$('status').textContent};$('c-drop').onclick=go;$('c-cancel').onclick=()=>{pending=null;$('d-conf').close()};
+function fresh(){apply(clone(EMPTY));S.loaded=null;S.base=JSON.stringify(snap());msg('Nieuw dossier. Bewaarde dossiers blijven in de lijst.')}
+function open(id){const e=H.find(x=>x.id===id);if(!e)return;if(!e.data){$('legacy').value=e.originalText??e.text;$('legacy').hidden=false;return}
+ $('d-hist').close();guard(()=>{try{apply(e.data);S.loaded=e.id;S.base=JSON.stringify(snap());msg('Dossier geladen.')}catch(err){msg(err.message)}})}
+function drawH(){$('hist-n').textContent=H.length?'('+H.length+')':'';$('h-list').innerHTML=H.length?H.map(e=>`<div class="hi${e.id===S.loaded?' cur':''}"><button class="o" data-o="${esc(e.id)}"><strong>${esc(e.title)}</strong><small>${new Date(e.date).toLocaleString('nl-NL')}${e.data?'':' · alleen tekst'}</small></button><button class="x" data-d="${esc(e.id)}" aria-label="Verwijder dossier ${esc(e.title)}">×</button></div>`).join(''):'<p class="cnt" style="padding:12px 0">Nog geen opgeslagen dossiers.</p>'}
+$('h-list').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.o)open(b.dataset.o);else if(b.dataset.d&&persist(H.filter(x=>x.id!==b.dataset.d))){if(S.loaded===b.dataset.d){S.loaded=null;S.base=''}drawH()}};
+$('open-hist').onclick=()=>{$('legacy').hidden=true;drawH();$('d-hist').showModal()};$('h-close').onclick=()=>$('d-hist').close();
+$('h-clear').onclick=()=>{if(H.length&&confirm('Alle opgeslagen dossiers uit deze browser verwijderen?')&&persist([])){S.loaded=null;S.base='';drawH()}};
+$('new').onclick=()=>guard(fresh);$('save').onclick=save;
+
+/* Kopiëren en PDF */
+function selectAll(){const a=$('summary');a.value=plain(a.value);a.focus();a.select();a.setSelectionRange(0,a.value.length)}
+$('sel').onclick=()=>{selectAll();msg('Tekst geselecteerd. Kies Kopieer in het selectiemenu.')};
+$('summary').addEventListener('copy',e=>{if(e.clipboardData){const a=e.currentTarget;e.clipboardData.clearData();e.clipboardData.setData('text/plain',plain(a.value.slice(a.selectionStart,a.selectionEnd)));e.preventDefault()}});
+$('copy').onclick=async()=>{const t=plain(compose());$('summary').value=t;let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch{}
+ if(!ok){const h=e=>{e.clipboardData.clearData();e.clipboardData.setData('text/plain',t);e.preventDefault()};document.addEventListener('copy',h);try{selectAll();ok=document.execCommand('copy')}catch{}document.removeEventListener('copy',h)}
+ msg(ok?'Platte tekst gekopieerd naar het klembord.':'Automatisch kopiëren is geblokkeerd. Gebruik Tekst selecteren en kies Kopieer.')};
+function buildPdf(text,now){
+ const PW=595.28,PH=841.89,M=51,WIDTH=PW-2*M,TOP=133,BOTTOM=780;
+ const heads=new Set(['ANAMNESE','VITALE FUNCTIES','LICHAMELIJK ONDERZOEK','DIAGNOSE','PLAN']);
+ const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
+ const clean=s=>String(s).replace(/₂/g,'2').replace(/²/g,'2').replace(/≥/g,'>=').replace(/≤/g,'<=').replace(/≈/g,'~').replace(/\t/g,'    ');
+ const extra={'€':128,'‚':130,'ƒ':131,'„':132,'…':133,'†':134,'‡':135,'ˆ':136,'‰':137,'Š':138,'‹':139,'Œ':140,'Ž':142,'‘':145,'’':146,'“':147,'”':148,'•':149,'–':150,'—':151,'˜':152,'™':153,'š':154,'›':155,'œ':156,'ž':158,'Ÿ':159};
+ const literal=s=>'('+Array.from(clean(s),c=>{const n=extra[c]??c.charCodeAt(0);return '\\'+(n<=255?n:63).toString(8).padStart(3,'0')}).join('')+')';
+ const stamp=now.toLocaleString('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZoneName:'short'});
+ function wrap(s,size,font){ctx.font=font+' '+size+'px Helvetica,Arial,sans-serif';const rows=[];let row='';for(const word of s.split(/\s+/)){let candidate=row?row+' '+word:word;if(ctx.measureText(candidate).width<=WIDTH){row=candidate;continue}if(row)rows.push(row);row='';for(const ch of word){if(row&&ctx.measureText(row+ch).width>WIDTH){rows.push(row);row=''}row+=ch}}if(row)rows.push(row);return rows}
+ const pages=[];let commands=[],y=TOP;
+ const put=(s,x,top,size=11,font='F1')=>commands.push('BT /'+font+' '+size+' Tf 1 0 0 1 '+x+' '+(PH-top).toFixed(2)+' Tm '+literal(s)+' Tj ET');
+ function header(){put('medicalchart.io | Medisch dossier',M,42,9);put('Medisch dossier',M,68,17,'F2');const dateText='Gedownload op: '+stamp;put(dateText,M,88,8);ctx.font='normal 8px Helvetica,Arial,sans-serif';put('Anonymous and offline medical charting ...',M+ctx.measureText(dateText).width+10,88,8,'F3');commands.push('0.3 w '+M+' '+(PH-112)+' m '+(PW-M)+' '+(PH-112)+' l S')}
+ function next(){pages.push(commands);commands=[];y=TOP;header()}
+ header();for(const paragraph of clean(text).split('\n')){if(!paragraph.trim()){y+=6;continue}const heading=heads.has(paragraph.trim()),rows=wrap(paragraph,11,heading?'bold':'normal');if(heading&&y+28>BOTTOM)next();for(const row of rows){if(y+14>BOTTOM)next();put(row,M,y,11,heading?'F2':'F1');y+=14}}
+ pages.push(commands);
+ const objects=[null,'<< /Type /Catalog /Pages 2 0 R >>','', '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding >>'];
+ const kids=[];pages.forEach((cmd,i)=>{commands=cmd;put('Vertrouwelijk | Medisch dossier',M,815,8);put('Pagina '+(i+1)+' van '+pages.length,PW-M-75,815,8);const pageId=objects.length,streamId=pageId+1;kids.push(pageId+' 0 R');objects.push('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+PW+' '+PH+'] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents '+streamId+' 0 R >>');const stream=cmd.join('\n')+'\n';objects.push('<< /Length '+stream.length+' >>\nstream\n'+stream+'endstream')});
+ objects[2]='<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+pages.length+' >>';
+ let pdf='%PDF-1.4\n',offsets=[0];for(let i=1;i<objects.length;i++){offsets.push(pdf.length);pdf+=i+' 0 obj\n'+objects[i]+'\nendobj\n'}const xref=pdf.length;pdf+='xref\n0 '+objects.length+'\n0000000000 65535 f \n';for(const offset of offsets.slice(1))pdf+=String(offset).padStart(10,'0')+' 00000 n \n';pdf+='trailer\n<< /Size '+objects.length+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF\n';
+ return {setProperties(){},getNumberOfPages:()=>pages.length,save(name){const blob=new Blob([pdf],{type:'application/pdf'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}}
+}
+$('pdf').onclick=()=>{if(blocked())return;try{const now=new Date(),t=$('title').value.trim()||'Lichamelijk onderzoek',doc=buildPdf(plain(compose()),now),p=n=>String(n).padStart(2,'0');doc.setProperties({title:'Medisch dossier'});
+ doc.save((t.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').slice(0,70)||'dossier')+'_'+now.getFullYear()+'-'+p(now.getMonth()+1)+'-'+p(now.getDate())+'_'+p(now.getHours())+'-'+p(now.getMinutes())+'-'+p(now.getSeconds())+'.pdf');
+ const n=doc.getNumberOfPages();msg('PDF gedownload. '+(n===1?'Het dossier past op één A4.':'Het dossier beslaat '+n+' A4-pagina’s.'))}catch(e){msg('PDF downloaden is niet gelukt. Probeer opnieuw.');console.error(e)}};
+
+/* Start */
+const clock=()=>{$('clock').textContent=new Intl.DateTimeFormat('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Amsterdam'}).format(new Date())};
+panes.an=pane($('an'),AN,'an',$('an-n'));panes.ex=pane($('ex'),EX,'ex',$('ex-n'));
+loadH();sync();showBody();showT();panes.an.draw();panes.ex.draw();update();drawH();EMPTY=clone(snap());S.base=JSON.stringify(EMPTY);clock();setInterval(clock,30000);
+</script>
+</body>
+</html>
