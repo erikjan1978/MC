@@ -7,13 +7,13 @@
 <style>
 :root{--bg:#f0f2f4;--card:#fff;--ink:#17222c;--mid:#586673;--line:#d6dce2;--fld:#aeb8c1;--acc:#1c5a86;--soft:#e8f0f6;--bad:#b42318;--ok:#2d7a54;--r:6px}
 *{box-sizing:border-box}html{scroll-padding-top:72px}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Avenir Next","Segoe UI Variable","Segoe UI",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
 button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}[hidden]{display:none!important}
 :focus-visible{outline:3px solid #5b9bd0;outline-offset:2px}
 .bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:20px;padding:10px 28px;background:#fff;border-bottom:1px solid var(--line)}
 .logo{font-size:23px;font-weight:300;letter-spacing:-.02em;color:var(--ink);text-decoration:none}.logo span{color:var(--mid)}
-.bar-date{flex:1}.bar-date em{display:block;font-size:12px;color:var(--mid)}
-#clock{display:block;flex:1;font-size:13px;color:var(--mid);font-variant-numeric:tabular-nums}
+.bar-date{flex:1;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px}.bar-date em{font-size:12px;color:var(--mid)}
+#clock{display:inline;font-size:13px;color:var(--mid);font-variant-numeric:tabular-nums}
 .btn{min-height:40px;padding:0 15px;border:1px solid var(--fld);border-radius:var(--r);background:#fff;font-weight:600;font-size:14px}
 .btn:hover{background:var(--soft)}.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}.btn.pri:hover{background:#154a70}.btn:disabled{opacity:.4;cursor:not-allowed}
 .lnk{border:0;background:none;padding:6px 0;color:var(--mid);font-size:13px;text-decoration:underline}
@@ -53,7 +53,7 @@ details.ref p{margin:.5rem 0;color:var(--mid);line-height:1.55}details.ref a{col
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .note{position:sticky;top:76px;max-height:calc(100vh - 92px);overflow:auto;display:flex;flex-direction:column}
 .sheet{padding:20px 22px 14px;border-bottom:1px solid var(--line)}.sheet small{display:block;font-size:12px;color:var(--mid)}.sheet b{display:block;font-size:17px;overflow-wrap:anywhere}
-#summary{border:0;border-radius:0;min-height:22rem;flex:1;padding:18px 22px;background:#fffefb;font:14px/1.6 "Iowan Old Style",Georgia,"Times New Roman",serif}
+#summary{border:0;border-radius:0;min-height:22rem;flex:1;padding:18px 22px;background:#fffefb;font:400 14px/1.6 Helvetica,Arial,sans-serif}
 .acts{display:flex;flex-wrap:wrap;gap:8px;padding:14px 22px;border-top:1px solid var(--line)}.acts .pri{flex:1}
 #status{padding:0 22px 14px;margin:0;font-size:12px;color:var(--mid);min-height:1.4em}.priv{padding:0 22px 18px;margin:0;font-size:12px;color:var(--mid)}
 dialog{width:min(36rem,calc(100vw - 2rem));padding:22px;border:1px solid var(--line);border-radius:10px;color:var(--ink)}dialog::backdrop{background:#17222c88}
@@ -249,14 +249,14 @@ function buildPdf(text,now){
  const extra={'€':128,'‚':130,'ƒ':131,'„':132,'…':133,'†':134,'‡':135,'ˆ':136,'‰':137,'Š':138,'‹':139,'Œ':140,'Ž':142,'‘':145,'’':146,'“':147,'”':148,'•':149,'–':150,'—':151,'˜':152,'™':153,'š':154,'›':155,'œ':156,'ž':158,'Ÿ':159};
  const literal=s=>'('+Array.from(clean(s),c=>{const n=extra[c]??c.charCodeAt(0);return '\\'+(n<=255?n:63).toString(8).padStart(3,'0')}).join('')+')';
  const stamp=now.toLocaleString('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZoneName:'short'});
- function wrap(s,size,font){ctx.font=font+' '+size+'px "Times New Roman",serif';const rows=[];let row='';for(const word of s.split(/\s+/)){let candidate=row?row+' '+word:word;if(ctx.measureText(candidate).width<=WIDTH){row=candidate;continue}if(row)rows.push(row);row='';for(const ch of word){if(row&&ctx.measureText(row+ch).width>WIDTH){rows.push(row);row=''}row+=ch}}if(row)rows.push(row);return rows}
+ function wrap(s,size,font){ctx.font=font+' '+size+'px Helvetica,Arial,sans-serif';const rows=[];let row='';for(const word of s.split(/\s+/)){let candidate=row?row+' '+word:word;if(ctx.measureText(candidate).width<=WIDTH){row=candidate;continue}if(row)rows.push(row);row='';for(const ch of word){if(row&&ctx.measureText(row+ch).width>WIDTH){rows.push(row);row=''}row+=ch}}if(row)rows.push(row);return rows}
  const pages=[];let commands=[],y=TOP;
  const put=(s,x,top,size=11,font='F1')=>commands.push('BT /'+font+' '+size+' Tf 1 0 0 1 '+x+' '+(PH-top).toFixed(2)+' Tm '+literal(s)+' Tj ET');
- function header(){put('medicalchart.io | Medisch dossier',M,42,9);put('Medisch dossier',M,68,17,'F2');put('Gedownload op: '+stamp,M,88,9);put('Anonymous and offline medical charting ...',M,103,9,'F3');commands.push('0.3 w '+M+' '+(PH-112)+' m '+(PW-M)+' '+(PH-112)+' l S')}
+ function header(){put('medicalchart.io | Medisch dossier',M,42,9);put('Medisch dossier',M,68,17,'F2');const dateText='Gedownload op: '+stamp;put(dateText,M,88,8);ctx.font='normal 8px Helvetica,Arial,sans-serif';put('Anonymous and offline medical charting ...',M+ctx.measureText(dateText).width+10,88,8,'F3');commands.push('0.3 w '+M+' '+(PH-112)+' m '+(PW-M)+' '+(PH-112)+' l S')}
  function next(){pages.push(commands);commands=[];y=TOP;header()}
  header();for(const paragraph of clean(text).split('\n')){if(!paragraph.trim()){y+=6;continue}const heading=heads.has(paragraph.trim()),rows=wrap(paragraph,11,heading?'bold':'normal');if(heading&&y+28>BOTTOM)next();for(const row of rows){if(y+14>BOTTOM)next();put(row,M,y,11,heading?'F2':'F1');y+=14}}
  pages.push(commands);
- const objects=[null,'<< /Type /Catalog /Pages 2 0 R >>','', '<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman /Encoding /WinAnsiEncoding >>','<< /Type /Font /Subtype /Type1 /BaseFont /Times-Bold /Encoding /WinAnsiEncoding >>','<< /Type /Font /Subtype /Type1 /BaseFont /Times-Italic /Encoding /WinAnsiEncoding >>'];
+ const objects=[null,'<< /Type /Catalog /Pages 2 0 R >>','', '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding >>'];
  const kids=[];pages.forEach((cmd,i)=>{commands=cmd;put('Vertrouwelijk | Medisch dossier',M,815,8);put('Pagina '+(i+1)+' van '+pages.length,PW-M-75,815,8);const pageId=objects.length,streamId=pageId+1;kids.push(pageId+' 0 R');objects.push('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+PW+' '+PH+'] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents '+streamId+' 0 R >>');const stream=cmd.join('\n')+'\n';objects.push('<< /Length '+stream.length+' >>\nstream\n'+stream+'endstream')});
  objects[2]='<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+pages.length+' >>';
  let pdf='%PDF-1.4\n',offsets=[0];for(let i=1;i<objects.length;i++){offsets.push(pdf.length);pdf+=i+' 0 obj\n'+objects[i]+'\nendobj\n'}const xref=pdf.length;pdf+='xref\n0 '+objects.length+'\n0000000000 65535 f \n';for(const offset of offsets.slice(1))pdf+=String(offset).padStart(10,'0')+' 00000 n \n';pdf+='trailer\n<< /Size '+objects.length+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF\n';
